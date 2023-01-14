@@ -34,10 +34,10 @@ def get_posts(db: Session = Depends(get_db)):
 # post_dict['id'] = randrange(0,100000)
 # my_posts.append(post_dict)
 #    return {"data": post}
-def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     # **post.dict() automatically transfer it to json format, like above
-    print(user_id)
+    print(current_user)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -51,7 +51,7 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), user_id
 #    post = cursor.fetchone()
 # post = my_posts[len(my_posts)-1]
 #    return {"latest_post": post}
-def get_latest_post(db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+def get_latest_post(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     extractedposts = db.query(models.Post).order_by(
         models.Post.id.desc()).first()
     return extractedposts
@@ -68,7 +68,7 @@ def get_latest_post(db: Session = Depends(get_db), user_id: int = Depends(oauth2
 # response.status_code = status.HTTP_404_NOT_FOUND
 # return {'message': f"Post with id: {id} was not found"}
 #    return {"post_detail": text_post}
-def get_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     extracted_post = db.query(models.Post).filter(models.Post.id == id).first()
     if not extracted_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -93,7 +93,7 @@ def get_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oaut
 #        status_code=status.HTTP_404_NOT_FOUND, detail="id does not exist")
 # my_posts.pop(index)
 #   return Response(status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     extracted_post = db.query(models.Post).filter(models.Post.id == id)
     if extracted_post.first() == None:
         raise HTTPException(
@@ -120,7 +120,7 @@ def delete_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(o
 # post_dict['id'] = id
 # my_posts[index] = post_dict
 #    return {'message': updated_post}
-def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     extracted_post = db.query(models.Post).filter(models.Post.id == id)
     if extracted_post.first() == None:
         raise HTTPException(
