@@ -12,7 +12,7 @@ router = APIRouter(
 #    cursor.execute("""select * from posts """)
 #    posts = cursor.fetchall()
 #    return {"data": posts}
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     extractedposts = db.query(models.Post).all()
     return extractedposts
 
@@ -38,7 +38,8 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     # **post.dict() automatically transfer it to json format, like above
     print(current_user)
-    new_post = models.Post(**post.dict())
+    #new_post = models.Post(**post.dict())
+    new_post = models.Post(owner_id = current_user.id,**post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -98,6 +99,8 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
     if extracted_post.first() == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="id does not exist")
+    if extracted_post.first().owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action")
     extracted_post.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -125,6 +128,8 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
     if extracted_post.first() == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="id does not exist")
+    if extracted_post.first().owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action")
     extracted_post.update(post.dict(), synchronize_session=False)
     db.commit()
     return extracted_post.first()
