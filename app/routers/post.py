@@ -1,19 +1,22 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
-from ..database import  get_db
+from typing import Optional, List
+from ..database import get_db
 from .. import models, schemas, oauth2
 
 router = APIRouter(
-    prefix="/posts",tags=['Posts']
+    prefix="/posts", tags=['Posts']
 )
+
 
 @router.get("/", response_model=list[schemas.Post])
 # def get_posts():
 #    cursor.execute("""select * from posts """)
 #    posts = cursor.fetchall()
 #    return {"data": posts}
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    extractedposts = db.query(models.Post).all()
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    extractedposts = db.query(models.Post).filter(
+        models.Post.title.contains(search)).limit(limit).offset(skip).all()
     return extractedposts
 
 # title str, content str
@@ -38,8 +41,8 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
     # **post.dict() automatically transfer it to json format, like above
     print(current_user)
-    #new_post = models.Post(**post.dict())
-    new_post = models.Post(owner_id = current_user.id,**post.dict())
+    # new_post = models.Post(**post.dict())
+    new_post = models.Post(owner_id=current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -74,6 +77,9 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
     if not extracted_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id: {id} was not found")
+    if extracted_post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
     return extracted_post
 
 
@@ -100,7 +106,8 @@ def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depe
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="id does not exist")
     if extracted_post.first().owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
     extracted_post.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -129,7 +136,8 @@ def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="id does not exist")
     if extracted_post.first().owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform requested action")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
     extracted_post.update(post.dict(), synchronize_session=False)
     db.commit()
     return extracted_post.first()
