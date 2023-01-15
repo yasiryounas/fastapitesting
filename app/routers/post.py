@@ -3,20 +3,27 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from ..database import get_db
 from .. import models, schemas, oauth2
+from sqlalchemy import func
 
 router = APIRouter(
     prefix="/posts", tags=['Posts']
 )
 
 
-@router.get("/", response_model=list[schemas.Post])
+# @router.get("/", response_model=list[schemas.Post])
+@router.get("/", response_model=list[schemas.PostOut])
 # def get_posts():
 #    cursor.execute("""select * from posts """)
 #    posts = cursor.fetchall()
 #    return {"data": posts}
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    extractedposts = db.query(models.Post).filter(
+    # extractedposts = db.query(models.Post).filter(
+    #     models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    # it will do the inner join by default
+    extractedposts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
+        models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).filter(
         models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    # print(results)
     return extractedposts
 
 # title str, content str
@@ -49,19 +56,24 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current
     return new_post
 
 
-@router.get("/latest", response_model=schemas.Post)
+# @router.get("/latest", response_model=schemas.Post)
+@router.get("/latest", response_model=schemas.PostOut)
 # def get_latest_post():
 #    cursor.execute("""SELECT * FROM posts ORDER BY id DESC LIMIT 1""")
 #    post = cursor.fetchone()
 # post = my_posts[len(my_posts)-1]
 #    return {"latest_post": post}
 def get_latest_post(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    extractedposts = db.query(models.Post).order_by(
+    # extractedposts = db.query(models.Post).order_by(
+    #     models.Post.id.desc()).first()
+    extractedposts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
+        models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).order_by(
         models.Post.id.desc()).first()
     return extractedposts
 
 
 @router.get("/{id}", response_model=schemas.Post)
+#@router.get("/{id}", response_model=schemas.PostOut)
 # def get_post(id: int, response: Response):
 # post = find_post(id)
 #    cursor.execute("""SELECT * FROM posts WHERE id = %s""", (str(id),))
@@ -74,6 +86,8 @@ def get_latest_post(db: Session = Depends(get_db), current_user: int = Depends(o
 #    return {"post_detail": text_post}
 def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     extracted_post = db.query(models.Post).filter(models.Post.id == id).first()
+    # extracted_post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
+    #      models.Vote, models.Post.id == models.Vote.post_id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
     if not extracted_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id: {id} was not found")

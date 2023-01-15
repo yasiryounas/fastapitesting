@@ -1,4 +1,5 @@
 venv/
 __pychache__
-app/__pycache__
+app/__pycache__/
+app/routers/__pycache__/
 .env
