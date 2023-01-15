@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from .config import env_settings
 # import psycopg2
 # from psycopg2.extras import RealDictCursor
 # import time
 
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
-SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:yasirhome@localhost/fastapi"
+# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver(IP:Port)/db"
+SQLALCHEMY_DATABASE_URL = f"postgresql://{env_settings.database_username}:{env_settings.database_password}@{env_settings.database_hostname}:{env_settings.database_port}/{env_settings.database_name}"
 
 # Engine is rsponsible for connecting with database
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

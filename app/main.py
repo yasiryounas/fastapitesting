@@ -14,12 +14,13 @@ from fastapi import FastAPI
 from . import models
 from .database import engine
 from .routers import post, user, auth
+from .config import env_settings
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
+print(env_settings.database_hostname)
 # my_posts = [{"title": "title of post 1", "content": "content of post 1", "id": 1}, {
 #     "title": "favorite foods", "content": "I like Pizza", "id": 2}]
 
