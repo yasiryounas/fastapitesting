@@ -5,3 +5,7 @@ app/routers/__pycache__/
 alembic/__pycache__
 alembic/versions/__pycache__
 .env
+setup.py
+app.egg-info
+build
+dist
