@@ -37,5 +37,9 @@ alembic downgrade 218590f44fd5
 To make alembic automatically detect the models created in Models file,
 alembic revision --autogenerate -m "auto-vote"
 
+to install the library for this project
+
+pip install -r requirements.txt
+
 to run the server
 uvicorn app.main:app --reload
