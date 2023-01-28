@@ -15,11 +15,23 @@ from . import models
 from .database import engine
 from .routers import post, user, auth, vote
 from .config import env_settings
+from fastapi.middleware.cors import CORSMiddleware
 
 # After Alembic implementation
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# For CORS Policy
+
+# origins=["https://www.google.com"]
+# For all public domain
+origins=["*"]
+
+app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=True,allow_methods=["*"],allow_headers=["*"],)
+
+
+
 
 print(env_settings.database_hostname)
 # my_posts = [{"title": "title of post 1", "content": "content of post 1", "id": 1}, {
