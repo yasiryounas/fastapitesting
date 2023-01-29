@@ -41,5 +41,22 @@ to install the library for this project
 
 pip install -r requirements.txt
 
+To resolve the importModuleError 
+
+ python setup.py install
+
+to run this in ubuntu vm where it can be accessed via any IP,
+  uvicorn --host 0.0.0.0 app.main:app
+
+
+to make the app run automatically, just install the gunicorn...
+pip install gunicorn
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+
+
+to automate it via systemctl command, 
+
+create file api.service file in /etc/systemd/system and paste all the content available in gunicorn.service file.
+
 to run the server
 uvicorn app.main:app --reload
