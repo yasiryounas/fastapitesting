@@ -60,3 +60,21 @@ create file api.service file in /etc/systemd/system and paste all the content av
 
 to run the server
 uvicorn app.main:app --reload
+
+
+Create Docker file and run following command to build the image
+docker build -t fastapi .
+to check the docker image
+docker image ls
+Create the docker compose and run the following command to run the image 
+docker-compose -f docker-compose-dev.yml up -d
+To verify the docker compose
+docker ps
+To down/remove the docker-compose
+docker-compose -f docker-compose-dev.yml down
+
+For Test automation:
+
+pip install pytest
+Create Test_*.py files and run it with below
+pytest -v -s
