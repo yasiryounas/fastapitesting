@@ -6,6 +6,12 @@ py -3 -m venv venv
 Now activate the virtual environment by 
 
 venv\Scripts\activate.bat
+venv\Scripts\Activate.ps1
+
+For MAC/WSL
+apt install python3.10-venv
+python3 -m venv venvWSL
+source venvWSL/bin/activate
 
 install the fastAPI by following command
 
@@ -78,3 +84,7 @@ For Test automation:
 pip install pytest
 Create Test_*.py files and run it with below
 pytest -v -s
+parametrize is used if we want to execute same test with different parameters
+@pytest.mark.parametrize("num1, num2, expected", [(3, 2, 5), (7, 1, 8), (12, 4, 16)])
+
+@pytest.fixture is use to initial a function/value to reduce the repeative code, it would use when you have to initialize the database or email before starting the testing...
