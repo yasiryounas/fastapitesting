@@ -95,3 +95,4 @@ pytest --disable-warnings -x
 by defining the scope of the fixture on module level, fixture will not be called again unless the module completed, but then the function in the module will not run independent from other functions present in same module, like changing the order of the function, like checking login first and then creating user, will fail the first function
 @pytest.fixture(scope="module")
 
+ConfTest.py allows any fixture define in package will be accessible to any other module in current package
