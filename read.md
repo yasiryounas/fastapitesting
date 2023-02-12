@@ -87,4 +87,11 @@ pytest -v -s
 parametrize is used if we want to execute same test with different parameters
 @pytest.mark.parametrize("num1, num2, expected", [(3, 2, 5), (7, 1, 8), (12, 4, 16)])
 
-@pytest.fixture is use to initial a function/value to reduce the repeative code, it would use when you have to initialize the database or email before starting the testing...
+@pytest.fixture is use to initial a function/value to reduce the repeative code, it would use when you have to initialize the database or email before starting the testing... in short, the fixture will run first then any testing happen
+
+To disable the warning in pytest and to stop on first test fail status, whereas in default it run for all the test no matter how much tests were failed.
+pytest --disable-warnings -x
+
+by defining the scope of the fixture on module level, fixture will not be called again unless the module completed, but then the function in the module will not run independent from other functions present in same module, like changing the order of the function, like checking login first and then creating user, will fail the first function
+@pytest.fixture(scope="module")
+

@@ -10,3 +10,4 @@ app.egg-info
 build
 dist
 test/__pycache__
+.vscode
