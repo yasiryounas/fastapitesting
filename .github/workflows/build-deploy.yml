@@ -12,7 +12,7 @@ on:
 # env:
 #       DATABASE_HOSTNAME: localhost
 jobs:
-  job1:
+  build:
     environment:
       name: testing
     env:
@@ -55,27 +55,44 @@ jobs:
         run: |
           pip install pytest
           pytest
+### commenting the docker setup
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{secrets.DOCKER_HUB_USERNAME}}
+      #     password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
+      # - name: Set up Docker Buildx
+      #   id: buildx
+      #   uses: docker/setup-buildx-action@v1
+
+      # - name: Build and Push
+      #   id: docker_build
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: ./
+      #     file: ./Dockerfile
+      #     builder: ${{steps.buildx.outputs.name}}
+      #     push: true
+      #     tags: ${{secrets.DOCKER_HUB_USERNAME}}/fastapi-app-1:latest
+      #     cache-from: type=local,src=/tmp/.buildx-cache
+      #     cache-to: type=local,dest=/tmp/.buildx-cache
+      # - name: Image digest
+      #   run: echo ${{steps.docker_build.outputs.digest}}
+  
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to ubuntu server
+        uses: applyboy/ssh-action@master
         with:
-          username: ${{secrets.DOCKER_HUB_USERNAME}}
-          password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build and Push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./Dockerfile
-          builder: ${{steps.buildx.outputs.name}}
-          push: true
-          tags: ${{secrets.DOCKER_HUB_USERNAME}}/fastapi-app-1:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-      - name: Image digest
-        run: echo ${{steps.docker_build.outputs.digest}}
+          host: ${{secrets.PROD_HOST}}
+          username: ${{secrets.PROD_USERNAME}}
+          password: ${{secrets.PROD_PASSWORD}}
+        run: |
+          cd app/src
+          git pull
+          echo ${{secrets.PROD_PASSWORD}} | sudo -S systemctl restart api
+      
