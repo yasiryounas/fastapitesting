@@ -10,7 +10,7 @@ def test_get_all_posts(authorized_client, test_posts):
         return schemas.PostOut(**post)
     posts_map = map(validate, res.json())
     posts_list = list(posts_map)
-    print(posts_list)
+    #print(posts_list)
 
     assert len(res.json()) == len(test_posts)
     assert res.status_code == 200
